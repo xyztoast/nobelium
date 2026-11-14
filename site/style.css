@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Fira+Code:wght@300..700&family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 :root {
   --bg: #0e0f12;
   --bg-glass: rgba(14, 15, 18, 0.92);
@@ -13,10 +14,12 @@
   --err: #ff8a80;
   --ok: #88dd88;
   --preview-bg: #fff;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mono: "Fira Code", monospace;
+
 }
 * {
   box-sizing: border-box;
+  font-family: "Fira Sans", sans-serif;
 }
 html {
   scroll-behavior: smooth;
@@ -63,17 +66,20 @@ main {
   padding: 0 5vw 80px;
 }
 h1 {
+  font-family: "Crimson Pro", serif;
   font-size: clamp(34px, 6vw, 58px);
   line-height: 1.1;
   margin: 64px 0 16px;
   letter-spacing: -1px;
 }
 h2 {
+  font-family: "Crimson Pro", serif;
   margin: 56px 0 12px;
   font-size: 26px;
   letter-spacing: -0.3px;
 }
 h3 {
+  font-family: "Crimson Pro", serif;
   margin: 28px 0 6px;
   font: 600 16px var(--mono);
   color: var(--ac);
