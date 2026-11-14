@@ -1,6 +1,6 @@
 // Docs viewer: loads documentation/*.md and renders it. Used by docs.html.
 (function () {
-  var PAGES = [['README', 'Overview'], ['getting-started', 'Getting started'], ['language-reference', 'Language reference'], ['events', 'Events'], ['statements', 'Statements'], ['expressions', 'Expressions and built-ins'], ['errors', 'Errors and debugging'], ['api', 'JavaScript API'], ['architecture', 'Architecture'], ['examples', 'Examples'], ['roadmap', 'Roadmap']];
+  var PAGES = [['README', 'Overview'], ['getting-started', 'Getting started'], ['language-reference', 'Language reference'], ['strings-and-data', 'Strings, lists, objects'], ['events', 'Events'], ['statements', 'Statements'], ['http', 'HTTP and streaming'], ['storage', 'Saving data'], ['timers', 'Timers'], ['animation', 'Animation'], ['modules', 'Importing files'], ['expressions', 'Expressions and built-ins'], ['errors', 'Errors and debugging'], ['api', 'JavaScript API'], ['architecture', 'Architecture'], ['examples', 'Examples'], ['roadmap', 'Roadmap']];
   function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function inl(t) {
     t = esc(t); var codes = [];

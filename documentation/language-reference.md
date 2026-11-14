@@ -21,9 +21,10 @@ let name = "sam"
 | text | `"hello"`, `'hello'` |
 | boolean | `true`, `false` |
 | nothing | `null` |
-| object | the result of `get` when the response is JSON |
+| list | `[1, 2, 3]` (see [strings, lists and objects](strings-and-data.md)) |
+| object | `{ name: "sam", age: 9 }`, also what JSON responses become |
 
-Text escapes: `\n` is a new line. Any other character after a backslash is that character, so `\"` is a quote and `\\` is a backslash.
+Text in double quotes can hold `{expressions}` (interpolation) and single-quoted text cannot. Escapes: `\n` is a new line, `\t` a tab. Any other character after a backslash is that character, so `\"` is a quote, `\{` a brace and `\\` a backslash. See [strings, lists and objects](strings-and-data.md).
 
 ## Variables
 
@@ -36,7 +37,7 @@ Using a name before `let`, or assigning to a name that was never created, is an 
 
 ## Scope
 
-- Each Nobelium block (and each loaded file) has its own global scope. Blocks do not share variables.
+- Each Nobelium block (and each imported file) has its own global scope. Blocks do not share variables. Files share only what they `export` and `import` (see [modules](modules.md)).
 - `if` and `repeat` bodies get their own inner scope. A `let` inside is gone after the body ends. Assigning to an outer variable from inside works.
 - Each time an event handler runs it gets a fresh scope, so a `let` inside a handler does not remember its value for the next click. Put long-lived variables outside, at the top of the block.
 - Functions can see the scope where they were defined.
@@ -56,7 +57,7 @@ These count as false: `false`, `null`, `0`, empty text `""`, and not-a-number. E
 
 ## Equality and comparison
 
-`==` and `!=` are strict: `"5" == 5` is false. Convert with `num()` or `str()` when needed. `<`, `>`, `<=`, `>=` compare like JavaScript.
+`==` and `!=` are strict: `"5" == 5` is false, and two lists or objects are only equal if they are the very same one. Convert with `num()` or `str()` when needed. `<`, `>`, `<=`, `>=` compare like JavaScript.
 
 ## Functions
 
@@ -76,7 +77,9 @@ set text "#out" to greet("sam")
 
 ## Reserved words
 
-`when let set fn if else repeat return stop show hide toggle add remove class to from on fade in out wait log get into of and or not true false null value text`
+`when let set fn if else repeat for each in break return stop show hide toggle add remove class to from on fade animate wait log fetch get post put patch delete stream every after cancel save forget clear storage import export with headers into as over ease delay times nowait of and or not true false null value text` and the animation presets `shake pulse bounce spin flash wobble`.
+
+Statement words only matter at the start of a statement (and the clause words only inside the statement that uses them), so a variable called `delay` is fine until it appears right after an `animate` line. When in doubt, pick a different name.
 
 `value` and `text` are only special when followed by `of`, so you can still name a variable `text`. Avoid it anyway to keep code readable.
 
@@ -87,6 +90,8 @@ set text "#out" to greet("sam")
 | `repeat` count | 10000 |
 | `wait` time | 60 seconds |
 | nested function calls | 200 |
+| `every` interval | at least 16 ms |
+| `animate ... times` | 100 |
 
 ## Execution order
 

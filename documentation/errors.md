@@ -27,6 +27,13 @@ In the playground the same messages appear in the console panel.
 | `expected a name but found ...` | `let`, `fn` or `get ... into` needs a name here |
 | `unexpected "word" (typo? ...)` | a line starts with something that is not a statement |
 | `use "fade in" or "fade out"` | fade needs a direction |
+| `"{" in a string is missing its closing "}"` | an interpolation was never closed. For a literal brace write `\{`, or use single quotes |
+| `unexpected "x" inside {...}` | the expression between braces in a string is not valid |
+| `this is not a statement` | a line is just an expression like `a.b`. Add what to do with it |
+| `"get" cannot send a body ...` | use `post`, or `fetch ... with { method: ..., body: ... }` |
+| `animate needs "to { ... }" or a preset` | add a `to { }` part or use shake, pulse, bounce, spin, flash, wobble |
+| `animate needs an object like { opacity: 0.5 }` | `to` and `from` take an object in braces |
+| `"export" must be followed by fn or let` | only functions and variables can be exported |
 | `no element matches "#x"` | nothing on the page has that selector. Check spelling, the `#` or `.`, and that the element exists when the code runs |
 | `"x" is not a valid selector` | broken css selector, like `"#"` or `"..a"` |
 | `expected a selector string like "#id" but got number` | you passed a non-text value where a selector goes. Add quotes |
@@ -34,11 +41,27 @@ In the playground the same messages appear in the console panel.
 | `"x" is not defined (create it with let first)` | assigned with `x = ...` before `let x = ...` |
 | `unknown function "x"` | no function or built-in with that name |
 | `"x" is not a function` | you called a variable like a function |
+| `"break" can only be used inside a loop` | `break` must be inside `for each`, `repeat` or `stream` |
+| `"for each" needs a list or text but got null` | the thing you loop over is missing. Check the data first |
+| `list position 9 is out of range (0 to 3)` | you can set positions up to the current length |
+| `a list or text position must be a number` | `xs["a"]` only works on objects |
+| `"x" is a reserved name` | objects cannot use `__proto__`, `constructor` or `prototype` as keys |
+| `cannot change a field of null` | the object you are assigning into does not exist |
 | `cannot read "f" of null` | a field was read on something that is not an object. Often `get` failed or returned text |
 | `cannot set "x" (use text or value)` | only `set text` and `set value` exist |
 | `"+" needs two numbers` (also - * / %) | convert with `num()` |
 | `cannot divide by zero` | check the divisor first |
-| `request to "url" failed` | network problem or the server blocks cross-origin requests |
+| `request to "url" failed (network error, or blocked by CORS)` | no connection, wrong address, or the server does not allow your site. See [http](http.md) |
+| `the url must be text` | the address given to get/post/fetch/stream is not text |
+| `headers must be an object ...` / `fetch options must be an object ...` | pass `{ name: value }` objects |
+| `could not save "k" (storage is full or blocked)` | browser storage is full or disabled |
+| `save needs a name in quotes ...` | the key after `as` must be non-empty text |
+| `cannot save a function` | only plain data can be saved |
+| `unknown key modifier "x"` | in `key "ctrl+s"` use ctrl, shift, alt or meta |
+| `"file" does not export "name"` | the name is not marked `export` in that file, or is misspelled |
+| `circular import of "file"` | two files import each other (directly or through others) |
+| `cannot import "file" from another site` | imports must be same-site unless you set `Nobelium.config.allowRemoteImports = true` |
+| `could not load "file"` | wrong path (paths are relative to the importing file), or opened from disk without a server |
 | `request to "url" returned status 404` | the server answered with an error |
 | `too many nested function calls` | a function keeps calling itself forever |
 | `block N: could not load file` | the `src` file was not found, or you opened the page from disk instead of a server |

@@ -7,7 +7,7 @@
     o = o || {};
     const lg = o.log || function (l, m) { N.config.log(l, (o.label ? o.label + ': ' : '') + m); };
     let ast; try { ast = N.parse(src); } catch (e) { lg('error', e.message); return null; }
-    const it = new N.Interpreter({ doc: o.doc || document, log: lg }); N.programs.push(it);
+    const it = new N.Interpreter({ doc: o.doc || document, log: lg, base: o.base }); N.programs.push(it);
     await it.start(ast); return it;
   };
   N.init = async function () {
@@ -15,7 +15,7 @@
     for (const el of els) {
       i++; let src = el.textContent; const url = el.getAttribute('src'); const label = 'block ' + i + (url ? ' (' + url + ')' : '');
       if (url) { try { const r = await fetch(url); if (!r.ok) throw 0; src = await r.text(); } catch (e) { N.config.log('error', label + ': could not load file'); continue; } }
-      await N.run(src, { label: label });
+      await N.run(src, { label: label, base: url ? new URL(url, document.baseURI).href : undefined });
     }
   };
   if (!window.NOBELIUM_MANUAL) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', N.init); else N.init(); }

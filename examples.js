@@ -57,4 +57,91 @@ when leave "#go" { remove class "glow" from "#go" }` },
   get "https://jsonplaceholder.typicode.com/todos/1" into todo
   set text "#out" to todo.title
 }` }
+,
+{ id: 'http', name: 'POST request', html: `<form id="f"><input id="title" placeholder="title"> <button>Send</button></form>
+<p id="msg"></p>`, code: `when submit "#f" {
+  stop
+  set text "#msg" to "sending..."
+  post "https://jsonplaceholder.typicode.com/posts" with { title: value of "#title", userId: 1 } into created
+  set text "#msg" to "saved as post #{created.id}"
+}` },
+{ id: 'stream', name: 'Streaming response', html: `<button id="go">Stream</button>
+<pre id="out"></pre>`, code: `when click "#go" {
+  set text "#out" to ""
+  let count = 0
+  stream "https://httpbin.org/stream/3" with { lines: true } into line {
+    count += 1
+    let item = parse(line)
+    set text "#out" to "{text of "#out"}#{count}: {item.url}\\n"
+  }
+  log "done, {count} lines"
+}` },
+{ id: 'storage', name: 'Save data (localStorage)', html: `<p id="v"></p>
+<button id="r">Reset</button>`, code: `let visits = saved("visits") or 0
+visits += 1
+save visits as "visits"
+set text "#v" to "run number {visits}"
+
+when click "#r" {
+  forget "visits"
+  set text "#v" to "reset! reload to start again"
+}` },
+{ id: 'todos', name: 'Todo list (lists + storage)', html: `<input id="t" placeholder="new item"> <button id="add">Add</button>
+<p id="out"></p>`, code: `let todos = saved("todos") or []
+
+fn draw() {
+  set text "#out" to "{len(todos)} items: {join(todos, ', ')}"
+}
+
+when click "#add" {
+  let t = trim(value of "#t")
+  if t == "" { return }
+  push(todos, t)
+  save todos as "todos"
+  set value "#t" to ""
+  draw()
+}
+
+draw()` },
+{ id: 'timers', name: 'Stopwatch (timers)', html: `<h2 id="time">0s</h2>
+<button id="start">Start</button> <button id="stop">Stop</button>`, code: `let secs = 0
+let running = null
+
+when click "#start" {
+  if running == null {
+    every 1s as tick {
+      secs += 1
+      set text "#time" to "{secs}s"
+    }
+    running = tick
+  }
+}
+
+when click "#stop" {
+  if running != null {
+    cancel running
+    running = null
+  }
+}` },
+{ id: 'animate', name: 'Animation', html: `<div id="box" style="position:relative;left:0;width:60px;height:60px;background:gold;margin:8px 0"></div>
+<button id="go">Move</button> <button id="no">Shake</button>`, code: `when click "#go" {
+  animate "#box" to { left: 200, backgroundColor: "tomato" } over 600ms ease "ease-in-out"
+  animate "#box" to { left: 0, backgroundColor: "gold" } over 600ms
+}
+when click "#no" { animate "#box" shake }` },
+{ id: 'events', name: 'Shortcuts and more events', html: `<p id="out">try ctrl+k, double click, or right click here</p>`, code: `when key "ctrl+k" {
+  stop
+  set text "#out" to "search opened"
+}
+when dblclick "#out" { set text "#out" to "double clicked" }
+when rightclick "#out" {
+  stop
+  set text "#out" to "right clicked at {event.x}, {event.y}"
+}` },
+{ id: 'import', name: 'Import from another file', html: `<p id="out"></p>`, lib: `export fn greet(name) {
+  return "hello, {name}!"
+}
+export let version = "1.0"`, code: `import greet, version from "lib.nbm"
+
+set text "#out" to "{greet("sam")} (v{version})"` }
 ];

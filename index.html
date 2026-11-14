@@ -28,15 +28,26 @@
 &lt;/nobelium&gt;</code></pre>
 <p>3. Open the page. Click the button. That is the whole setup. Selectors are always strings in quotes, like css: <code>"#id"</code>, <code>".class"</code>.</p>
 <p>Tip: if your code uses <code>&lt;</code> or <code>&amp;</code>, put it in <code>&lt;script type="text/nobelium"&gt;</code> instead of <code>&lt;nobelium&gt;</code> so the html parser leaves it alone. Standalone files work too: <code>&lt;nobelium src="app.nbm"&gt;&lt;/nobelium&gt;</code> (needs a web server or github pages).</p>
+<h2>What it can do</h2>
+<div class="two">
+<pre><code><span class="c">// text with expressions inside</span>
+<span class="k">let</span> n = saved(<span class="s">"visits"</span>) <span class="k">or</span> <span class="n">0</span>
+<span class="k">save</span> n + <span class="n">1</span> <span class="k">as</span> <span class="s">"visits"</span>
+<span class="k">set</span> text <span class="s">"#v"</span> <span class="k">to</span> <span class="s">"visit {n + 1}"</span></code></pre>
+<pre><code><span class="k">post</span> <span class="s">"/api/items"</span> <span class="k">with</span> { name: <span class="s">"pen"</span> } <span class="k">into</span> item
+<span class="k">every</span> <span class="n">1s</span> { log <span class="s">"tick"</span> }
+<span class="k">animate</span> <span class="s">"#box"</span> <span class="k">to</span> { left: <span class="n">200</span> } <span class="k">over</span> <span class="n">600ms</span>
+<span class="k">import</span> greet <span class="k">from</span> <span class="s">"utils.nbm"</span></code></pre>
+</div>
 <h2 id="examples">Examples</h2>
 <div class="grid" id="gal"></div>
 <h2 id="download">Download</h2>
 <p><a class="btn" href="dist/nobelium.js" download>nobelium.js</a> is the whole language in one file (about 15 kb, no dependencies). Or copy the four files in <code>src/</code> (lexer, parser, interpreter, runtime). Works in any modern browser, nothing to install.</p>
 <h2 id="roadmap">Roadmap</h2>
 <table>
-<tr><td>done</td><td>events, show/hide/toggle, classes, variables, if/else, functions, repeat, fade, wait, get requests, form reading and validation, keyboard keys, standalone files, playground</td></tr>
-<tr><td>next</td><td>post requests, lists and indexing, string templates, <code>animate</code> with custom css, tabs/accordion shortcuts, a vs code highlighting file</td></tr>
-<tr><td>later</td><td>modules (<code>import</code>), a tiny test runner, source maps for error lines inside html files</td></tr>
+<tr><td>done</td><td>events (click, keys with combos, scroll, focus, ...), show/hide/fade, <b>animate</b>, variables, lists and objects, <b>string interpolation</b>, if/else, loops, functions, <b>get/post/put/patch/delete, fetch and streaming</b>, <b>localStorage</b>, <b>timers</b>, <b>import/export between files</b>, forms, standalone files, playground</td></tr>
+<tr><td>next</td><td><code>while</code> and <code>continue</code>, methods on values, sessionStorage, tabs/accordion shortcuts, a vs code highlighting file</td></tr>
+<tr><td>later</td><td><code>import ... as</code> namespaces, a tiny test runner, source maps for error lines inside html files, creating elements from templates</td></tr>
 </table>
 </main>
 <script src="examples.js"></script>

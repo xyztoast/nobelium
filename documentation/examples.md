@@ -170,3 +170,163 @@ Each recipe shows the HTML it needs and the Nobelium code. All of them are also 
   }
 </nobelium>
 ```
+
+## Persistent todo list (lists, interpolation, storage)
+
+```html
+<input id="t" placeholder="new item"> <button id="add">Add</button>
+<p id="out"></p>
+
+<nobelium>
+  let todos = saved("todos") or []
+
+  fn draw() {
+    set text "#out" to "{len(todos)} items: {join(todos, ', ')}"
+  }
+
+  when click "#add" {
+    let t = trim(value of "#t")
+    if t == "" { return }
+    push(todos, t)
+    save todos as "todos"
+    set value "#t" to ""
+    draw()
+  }
+
+  draw()
+</nobelium>
+```
+
+## Stopwatch (timers)
+
+```html
+<h2 id="time">0s</h2>
+<button id="start">Start</button> <button id="stop">Stop</button>
+
+<nobelium>
+  let secs = 0
+  let running = null
+
+  when click "#start" {
+    if running == null {
+      every 1s as tick {
+        secs += 1
+        set text "#time" to "{secs}s"
+      }
+      running = tick
+    }
+  }
+  when click "#stop" {
+    if running != null {
+      cancel running
+      running = null
+    }
+  }
+</nobelium>
+```
+
+## Animated box
+
+```html
+<div id="box" style="position:relative;left:0;width:60px;height:60px;background:gold"></div>
+<button id="go">Move</button> <button id="no">No!</button>
+
+<nobelium>
+  when click "#go" {
+    animate "#box" to { left: 200, backgroundColor: "tomato" } over 600ms ease "ease-in-out"
+    animate "#box" to { left: 0, backgroundColor: "gold" } over 600ms
+  }
+  when click "#no" { animate "#box" shake }
+</nobelium>
+```
+
+## Post a form as JSON
+
+```html
+<form id="f"><input id="title" placeholder="title"> <button>Send</button></form>
+<p id="msg"></p>
+
+<nobelium>
+  when submit "#f" {
+    stop
+    set text "#msg" to "sending..."
+    post "https://jsonplaceholder.typicode.com/posts" with { title: value of "#title", userId: 1 } into created
+    set text "#msg" to "saved as post #{created.id}"
+  }
+</nobelium>
+```
+
+## Handle error statuses yourself (fetch)
+
+```html
+<button id="b">Check</button> <p id="out"></p>
+
+<nobelium>
+  when click "#b" {
+    fetch "https://jsonplaceholder.typicode.com/todos/99999" into res
+    if res.ok {
+      set text "#out" to "found: {res.json.title}"
+    } else {
+      set text "#out" to "not found (status {res.status})"
+    }
+  }
+</nobelium>
+```
+
+## Read a streaming response line by line
+
+```html
+<button id="go">Stream</button> <pre id="out"></pre>
+
+<nobelium>
+  when click "#go" {
+    set text "#out" to ""
+    let count = 0
+    stream "https://httpbin.org/stream/3" with { lines: true } into line {
+      count += 1
+      let item = parse(line)
+      set text "#out" to "{text of "#out"}#{count}: {item.url}\n"
+    }
+    log "done, {count} lines"
+  }
+</nobelium>
+```
+
+## Shortcuts and scroll
+
+```html
+<p id="out">try ctrl+k, or double click this text</p>
+<button id="up" style="position:fixed;bottom:10px;right:10px;display:none">Top</button>
+
+<nobelium>
+  when key "ctrl+k" {
+    stop
+    set text "#out" to "search opened"
+  }
+  when dblclick "#out" { set text "#out" to "double clicked" }
+  when scroll {
+    if event.scroll > 300 { show "#up" } else { hide "#up" }
+  }
+</nobelium>
+```
+
+## Two files with import
+
+`utils.nbm`:
+
+```nobelium
+export fn greet(name) {
+  return "hello, {name}!"
+}
+export let version = "1.0"
+```
+
+`index.html`:
+
+```html
+<p id="out"></p>
+<nobelium>
+  import greet, version from "utils.nbm"
+  set text "#out" to "{greet("sam")} (v{version})"
+</nobelium>
+```

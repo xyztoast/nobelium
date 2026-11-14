@@ -2,20 +2,20 @@
 <nav><b>nobelium</b><a href="index.html">Home</a><a href="docs.html">Docs</a><a href="playground.html">Playground</a><a href="index.html#examples">Examples</a><a href="index.html#download">Download</a><a href="index.html#roadmap">Roadmap</a></nav>
 <div class="pg">
 <div class="bar full"><select id="ex"></select><button class="run" id="run">Run</button><button id="reset">Reset</button></div>
-<div><h4>html</h4><textarea id="html" spellcheck="false"></textarea><h4 class="gap">nobelium</h4><div class="edit"><pre id="hl"></pre><textarea id="code" spellcheck="false"></textarea></div></div>
+<div><h4>html</h4><textarea id="html" spellcheck="false"></textarea><h4 class="gap">nobelium</h4><div class="edit"><pre id="hl"></pre><textarea id="code" spellcheck="false"></textarea></div><h4 class="gap">lib.nbm (optional file for import "lib.nbm")</h4><textarea id="lib" class="small" spellcheck="false"></textarea></div>
 <div><h4>preview</h4><iframe id="frame" sandbox="allow-scripts allow-forms"></iframe><div id="con"></div></div>
 </div>
 <script src="examples.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)};
 var TAGS=['lexer','parser','interpreter','runtime'].map(function(f){return '<script src="src/'+f+'.js"><\/script>'}).join('');
-var RX=/(\/\/[^\n]*)|("(?:[^"\\n]|\.)*"|'(?:[^'\\n]|\.)*')|(\b\d+(?:\.\d+)?(?:ms|s)?\b)|\b(when|let|set|fn|if|else|repeat|return|stop|show|hide|toggle|add|remove|class|to|from|on|fade|in|out|wait|log|get|into|of|and|or|not|true|false|null)\b/g;
+var RX=/(\/\/[^\n]*)|("(?:[^"\\n]|\.)*"|'(?:[^'\\n]|\.)*')|(\b\d+(?:\.\d+)?(?:ms|s)?\b)|\b(when|let|set|fn|if|else|repeat|for|each|break|return|stop|show|hide|toggle|add|remove|class|to|from|on|fade|animate|wait|log|fetch|get|post|put|patch|delete|stream|every|after|cancel|save|forget|clear|storage|import|export|with|headers|into|as|over|ease|delay|times|nowait|shake|pulse|bounce|spin|flash|wobble|in|out|of|and|or|not|true|false|null)\b/g;
 function hl(){var t=$('code').value.replace(/&/g,'&amp;').replace(/</g,'&lt;');
  $('hl').innerHTML=t.replace(RX,function(m,c,s,n,k){return c?'<span class="c">'+m+'</span>':s?'<span class="s">'+m+'</span>':n?'<span class="n">'+m+'</span>':'<span class="k">'+m+'</span>'})+'\n'}
 function sync(){$('hl').scrollTop=$('code').scrollTop;$('hl').scrollLeft=$('code').scrollLeft}
-function load(id){var e=EXAMPLES.filter(function(x){return x.id===id})[0]||EXAMPLES[0];$('ex').value=e.id;$('html').value=e.html;$('code').value=e.code;hl();run()}
+function load(id){var e=EXAMPLES.filter(function(x){return x.id===id})[0]||EXAMPLES[0];$('ex').value=e.id;$('html').value=e.html;$('code').value=e.code;$('lib').value=e.lib||'';hl();run()}
 function run(){$('con').innerHTML='';
- $('frame').srcdoc='<!doctype html><html><head><meta charset="utf-8"><style>body{font:15px system-ui;padding:14px;color:#111}button,input{font:inherit;padding:6px 10px;margin:2px}</style></head><body>'+$('html').value+'<script type="text/nobelium">'+$('code').value.replace(/<\/script/gi,'')+'<\/script>'+TAGS+'<script>Nobelium.config.log=function(l,m){parent.postMessage({nb:1,l:l,m:m},"*")}<\/script></body></html>'}
+ $('frame').srcdoc='<!doctype html><html><head><meta charset="utf-8"><style>body{font:15px system-ui;padding:14px;color:#111}button,input{font:inherit;padding:6px 10px;margin:2px}</style></head><body>'+$('html').value+'<script type="text/nobelium">'+$('code').value.replace(/<\/script/gi,'')+'<\/script>'+TAGS+($('lib').value?'<script>Nobelium.files={"lib.nbm":'+JSON.stringify($('lib').value).replace(/</g,'\u003c')+'};<\/script>':'')+'<script>Nobelium.config.log=function(l,m){parent.postMessage({nb:1,l:l,m:m},"*")}<\/script></body></html>'}
 window.addEventListener('message',function(e){if(!e.data||!e.data.nb)return;var d=document.createElement('div');d.className=e.data.l==='error'?'err':'';d.textContent=(e.data.l==='error'?'error: ':'')+e.data.m;$('con').appendChild(d)});
 EXAMPLES.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=e.name;$('ex').appendChild(o)});
 $('ex').onchange=function(){location.hash=this.value;load(this.value)};$('run').onclick=run;$('reset').onclick=function(){load($('ex').value)};

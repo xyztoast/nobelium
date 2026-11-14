@@ -49,3 +49,31 @@ Nobelium.config.log = function (level, message) {
   document.getElementById("console").textContent += level + ": " + message + "\n";
 };
 ```
+
+## Virtual files
+
+For [imports](modules.md) without a web server (opening the html file from disk, the playground, tests), register files in memory. Names are matched exactly as written in `import`:
+
+```html
+<script src="nobelium.js"></script>
+<script>
+  Nobelium.files["utils.nbm"] = 'export fn double(n) { return n * 2 }';
+</script>
+<nobelium>
+  import double from "utils.nbm"
+  log double(21)
+</nobelium>
+```
+
+Virtual files win over real files with the same name.
+
+## More API
+
+| name | what it is |
+|---|---|
+| `Nobelium.files` | object of virtual files (see above) |
+| `Nobelium.modules` | map of imported modules already loaded (each file runs once per page) |
+| `Nobelium.config.allowRemoteImports` | set to `true` to let `import` load files from other sites. Default `false` |
+| `run` option `base` | base address used to resolve `import` paths (defaults to the page address) |
+
+`program.dispose()` removes all event listeners **and cancels all timers** the program created.

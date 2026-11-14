@@ -19,7 +19,16 @@ Quick table, details below.
 | `return expr` | leave a function or handler |
 | `name(args)` | call a function |
 | `wait 500ms` | pause |
-| `get "url" into name` | http request |
+| `get / post / put / patch / delete "url" ... into name` | simple http requests, see [http](http.md) |
+| `fetch "url" into name` | full response with status and headers, see [http](http.md) |
+| `stream "url" into chunk { }` | read a response piece by piece, see [http](http.md) |
+| `for each x in list { }` | loop over a list or text |
+| `break` | leave the nearest loop |
+| `x += 1`, `obj.key = v`, `list[0] = v` | change variables, fields and list items |
+| `animate "sel" to { } over 1s` | smooth css animation, see [animation](animation.md) |
+| `every 1s { }` / `after 1s { }` / `cancel t` | timers, see [timers](timers.md) |
+| `save v as "key"` / `forget "key"` / `clear storage` | localStorage, see [storage](storage.md) |
+| `import a, b from "file"` / `export fn` | share code between files, see [modules](modules.md) |
 | `stop` | cancel the browser default action |
 | `log expr` | print a message |
 | `when ...` | see [events](events.md) |
@@ -93,7 +102,17 @@ repeat 3 {
 }
 ```
 
-Inside the body you have no counter variable. Make your own with `let` outside and `i = i + 1` inside.
+`repeat` has no counter variable. Use `break` to leave early. To walk through a list use `for each`, or make your own counter with `let` outside and `i += 1` inside.
+
+## for each
+
+```nobelium
+for each name in ["ann", "bo", "cy"] {
+  log "hello {name}"
+}
+```
+
+See [strings, lists and objects](strings-and-data.md#looping-over-a-list).
 
 ## fn and return
 
@@ -115,19 +134,20 @@ wait 2s
 wait delay      // a variable holding milliseconds
 ```
 
-## get
+## http
 
-```
-get "https://example.com/api/item" into item
-set text "#out" to item.title
+`get`, `post`, `put`, `patch`, `delete`, `fetch` and `stream` have their own page: [http requests, fetch and streaming](http.md).
+
+## assignment
+
+```nobelium
+score = score + 1
+score += 1
+user.name = "sam"
+items[0] = "first"
 ```
 
-- Sends a GET request and waits for it.
-- If the response is JSON you get an object (read fields with `item.title`), otherwise you get the text.
-- The server must allow cross-origin requests (CORS) unless it is on the same site.
-- A failed request or a non-2xx status is an error for that handler.
-- Missing fields read as `null`, not an error.
-- The variable is created in the current scope.
+`x += 1` is short for `x = x + 1` (and `-=` for subtracting). The target can be a variable, an object field or a list position. See [strings, lists and objects](strings-and-data.md#changing-things-assignment).
 
 ## stop
 

@@ -21,5 +21,20 @@ await t('runtime error isolated','<b id=b></b>','when click "#b" { log nope }\nw
 await t('dynamic DOM','','when click ".x" { set text ".x" to "hi" }',async function(){var b=document.createElement('b');b.className='x';fx.appendChild(b);click('.x')},function(){return document.querySelector('.x').textContent==='hi'});
 await t('functions','<i id=r></i><b id=b></b>','fn dbl(a) { return a * 2 }\nwhen click "#b" { set text "#r" to dbl(21) }',async function(){click('#b')},function(){return document.querySelector('#r').textContent==='42'});
 await t('multiple blocks (separate runs)','<i id=r></i>','set text "#r" to "one"',async function(){await Nobelium.run('set text "#r" to "two"')},function(){return document.querySelector('#r').textContent==='two'});
+await t('interpolation + lists + objects','<i id=r></i>','let o = { a: 1 }\no.a += 2\nlet xs = [5, 6]\npush(xs, 7)\nset text "#r" to "a={o.a} last={xs[-1]} n={len(xs)}"',null,function(){return document.querySelector('#r').textContent==='a=3 last=7 n=3'});
+await t('for each + break','<i id=r></i>','let s = 0\nfor each x in [1, 2, 3, 4] {\n if x == 3 { break }\n s += x\n}\nset text "#r" to s',null,function(){return document.querySelector('#r').textContent==='3'});
+await t('localStorage save / saved / forget','','save { n: 4 } as "tt"\nlog saved("tt").n\nforget "tt"\nlog saved("tt")\nclear storage',null,function(){return logs.join('|')==='log: 4|log: null'});
+await t('timers: every + cancel, after','<i id=r></i>','let c = 0\nevery 20ms as t { c += 1\n set text "#r" to c\n if c == 2 { cancel t } }\nafter 10ms { log "later" }',async function(){await sleep(150)},function(){return document.querySelector('#r').textContent==='2'&&logs.join()==='log: later'});
+await t('more events: dblclick, key combo','<b id=b></b>','when dblclick "#b" { log "dbl" }\nwhen key "ctrl+k" { stop\n log "combo" }',async function(){document.querySelector('#b').dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}))},function(){return logs.indexOf('log: dbl')>=0&&logs.indexOf('log: combo')>=0});
+await t('animate sets final css','<div id=b></div>','animate "#b" to { opacity: 0.5, width: 120 } over 80ms',async function(){await sleep(250)},function(){var b=document.querySelector('#b');return b.style.opacity==='0.5'&&b.style.width==='120px'});
+Nobelium.files['t-lib.nbm']='export fn twice(n) { return n * 2 }\nexport let tag = "x"';
+await t('import / export','<i id=r></i>','import twice, tag from "t-lib.nbm"\nset text "#r" to "{twice(21)}{tag}"',null,function(){return document.querySelector('#r').textContent==='42x'});
+await t('import: missing export is an error','','import nope from "t-lib.nbm"',null,function(){return /does not export/.test(logs[0])});
+var realFetch=window.fetch;
+window.fetch=function(u,init){return Promise.resolve(new Response(JSON.stringify({id:9,m:init.method}),{status:201,headers:{'content-type':'application/json'}}))};
+await t('http post + fetch','<i id=r></i>','post "/x" with { a: 1 } into d\nfetch "/y" into res\nset text "#r" to "{d.id}{d.m} {res.status} {res.ok}"',null,function(){return document.querySelector('#r').textContent==='9POST 201 true'});
+window.fetch=function(){var e=new TextEncoder();return Promise.resolve(new Response(new ReadableStream({start:function(c){c.enqueue(e.encode('a\nb'));c.enqueue(e.encode('c\n'));c.close()}})))};
+await t('stream lines','','stream "/s" with { lines: true } into l { log l }',null,function(){return logs.join('|')==='log: a|log: bc'});
+window.fetch=realFetch;
 })();
 </script></body></html>

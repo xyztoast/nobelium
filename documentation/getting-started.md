@@ -59,4 +59,4 @@ In the browser console (right click the page, Inspect, Console tab). Every messa
 
 ## Next
 
-Read the [language reference](language-reference.md), or jump to [examples](examples.md).
+Read the [language reference](language-reference.md), or jump to [examples](examples.md). Once you know the basics, see [strings, lists and objects](strings-and-data.md), [http](http.md), [storage](storage.md), [timers](timers.md), [animation](animation.md) and [modules](modules.md).
