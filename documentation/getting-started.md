@@ -2,11 +2,23 @@
 
 ## 1. Get the file
 
-Download `dist/nobelium.js` from the project (or copy the four files in `src/`: `lexer.js`, `parser.js`, `interpreter.js`, `runtime.js`). Put it next to your HTML file. There is nothing to install and no build step.
+**Easiest (no download):** use the CDN link in step 2 below.
+
+**Or self-host:** download `dist/nobelium.js` from the project (or copy the four files in `src/`: `lexer.js`, `parser.js`, `interpreter.js`, `runtime.js`). Put it next to your HTML file. There is nothing to install and no build step.
 
 ## 2. Add it to your page
 
-Put the script tag before your Nobelium blocks (anywhere in `<head>` or `<body>` works):
+Put the script tag before your Nobelium blocks (anywhere in `<head>` or `<body>` works).
+
+From the CDN (jsDelivr, free):
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/xyztoast/nobelium@v1.0.0/dist/nobelium.min.js"></script>
+```
+
+Pinned to `v1.0.0`, so your site never changes unexpectedly. Swap `@v1.0.0` for `@latest` to always get the newest release, and `nobelium.min.js` for `nobelium.js` if you want the readable version.
+
+From your own copy:
 
 ```html
 <script src="nobelium.js"></script>
