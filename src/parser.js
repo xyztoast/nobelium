@@ -41,7 +41,7 @@
     }
     function postfix(e) {
       for (;;) {
-        if (isOp('.')) { const k = next(); e = { k: 'member', o: e, n: name(), L: k.line }; }
+        if (isOp('.')) { const k = next(), n = name(); e = isOp('(') ? { k: 'mcall', o: e, n: n, args: args(), L: k.line } : { k: 'member', o: e, n: n, L: k.line }; }
         else if (isOp('[')) { const k = next(); const i = expr(); expectOp(']'); e = { k: 'index', o: e, i: i, L: k.line }; }
         else return e;
       }
@@ -78,6 +78,7 @@
       while (!isOp('}')) { if (T[p].t === 'eof') fail('missing "}" to close the block'); b.push(stmt()); }
       next(); return b;
     }
+    const sess = () => { if (isId('in')) { next(); expectId('session'); return true; } return false; };
     function optWith() { if (isId('with')) { next(); return expr(); } return null; }
     function stmt() {
       const k = T[p]; if (k.t !== 'id') fail('unexpected ' + desc(k));
@@ -85,7 +86,7 @@
       switch (k.v) {
         case 'when': { const ev = name(); const sel = isOp('{') ? null : primary(); return { k: 'when', ev: ev, sel: sel, body: block(), L: L }; }
         case 'let': { const n = name(); expectOp('='); return { k: 'let', n: n, e: expr(), L: L }; }
-        case 'set': { const prop = name(); const sel = primary(); expectId('to'); return { k: 'set', prop: prop, sel: sel, e: expr(), L: L }; }
+        case 'set': { const prop = name(); const sel = primary(); expectId('to'); const e = expr(); let days = null; if (prop === 'cookie' && isId('days')) { next(); days = expr(); } return { k: 'set', prop: prop, sel: sel, e: e, days: days, L: L }; }
         case 'fn': { const n = name(); expectOp('('); const ps = [];
           while (!isOp(')')) { ps.push(name()); if (isOp(',')) next(); else break; }
           expectOp(')'); return { k: 'fn', n: n, ps: ps, body: block(), L: L }; }
@@ -95,13 +96,23 @@
         case 'repeat': { const n = expr(); return { k: 'repeat', n: n, body: block(), L: L }; }
         case 'for': { expectId('each'); const n = name(); expectId('in'); const it = expr(); return { k: 'foreach', n: n, it: it, body: block(), L: L }; }
         case 'break': return { k: 'break', L: L };
+        case 'continue': return { k: 'continue', L: L };
+        case 'while': { const c = expr(); return { k: 'while', c: c, body: block(), L: L }; }
+        case 'tabs': case 'accordion': { const a = primary(); expectId('for'); const b = primary(); const only = k.v === 'accordion' && isId('only'); if (only) next(); return { k: 'group', kind: k.v, a: a, b: b, only: only, L: L }; }
+        case 'create': { const tag = expr(); expectId('in'); const into = primary(); return { k: 'create', tag: tag, into: into, opts: optWith(), L: L }; }
+        case 'copy': { const from = primary(); expectId('to'); const into = primary(); return { k: 'copy', from: from, into: into, opts: optWith(), L: L }; }
+        case 'empty': return { k: 'empty', sel: primary(), L: L };
+        case 'test': { const n = primary(); return { k: 'test', name: n, body: block(), L: L }; }
+        case 'assert': { const c = expr(); let m = null; if (isOp(',')) { next(); m = expr(); } return { k: 'assert', c: c, m: m, L: L }; }
+        case 'run': expectId('tests'); return { k: 'runtests', L: L };
+        case 'trigger': { const ev = name(); return { k: 'trigger', ev: ev, sel: primary(), L: L }; }
         case 'return': return { k: 'return', e: (isOp('}') || T[p].t === 'eof') ? null : expr(), L: L };
         case 'stop': return { k: 'stop', L: L };
         case 'show': case 'hide': return { k: 'vis', op: k.v, sel: primary(), L: L };
         case 'toggle': if (isId('class')) { next(); const c = expr(); expectId('on'); return { k: 'cls', op: 'toggle', c: c, sel: primary(), L: L }; }
           return { k: 'vis', op: 'toggle', sel: primary(), L: L };
         case 'add': { expectId('class'); const c = expr(); expectId('to'); return { k: 'cls', op: 'add', c: c, sel: primary(), L: L }; }
-        case 'remove': { expectId('class'); const c = expr(); expectId('from'); return { k: 'cls', op: 'remove', c: c, sel: primary(), L: L }; }
+        case 'remove': { if (isId('element')) { next(); return { k: 'rmel', sel: primary(), L: L }; } expectId('class'); const c = expr(); expectId('from'); return { k: 'cls', op: 'remove', c: c, sel: primary(), L: L }; }
         case 'fade': { const dir = name(); if (dir !== 'in' && dir !== 'out') fail('use "fade in" or "fade out"'); return { k: 'fade', dir: dir, sel: primary(), L: L }; }
         case 'animate': {
           const a = { k: 'animate', sel: primary(), from: null, to: null, over: null, ease: null, delay: null, times: null, nowait: false, preset: null, L: L };
@@ -125,17 +136,17 @@
         case 'stream': { const url = expr(); const opts = optWith(); expectId('into'); const n = name(); return { k: 'stream', url: url, opts: opts, n: n, body: block(), L: L }; }
         case 'every': case 'after': { const d = expr(); let n = null; if (isId('as')) { next(); n = name(); } return { k: 'timer', kind: k.v, d: d, n: n, body: block(), L: L }; }
         case 'cancel': return { k: 'cancel', e: expr(), L: L };
-        case 'save': { const v = expr(); expectId('as'); return { k: 'save', e: v, key: expr(), L: L }; }
-        case 'forget': return { k: 'forget', key: expr(), L: L };
-        case 'clear': expectId('storage'); return { k: 'clearstore', L: L };
+        case 'save': { const v = expr(); expectId('as'); const key = expr(); return { k: 'save', e: v, key: key, sess: sess(), L: L }; }
+        case 'forget': { if (isId('cookie')) { next(); return { k: 'delcookie', key: expr(), L: L }; } const key = expr(); return { k: 'forget', key: key, sess: sess(), L: L }; }
+        case 'clear': { const w = name(); if (w !== 'storage' && w !== 'session') fail('use "clear storage" or "clear session"'); return { k: 'clearstore', sess: w === 'session', L: L }; }
         case 'import': {
-          if (T[p].t === 'str' || T[p].t === 'tpl') return { k: 'import', names: null, src: primary(), L: L };
+          if (T[p].t === 'str' || T[p].t === 'tpl') { const src = primary(); let alias = null; if (isId('as')) { next(); alias = name(); } return { k: 'import', names: null, alias: alias, src: src, L: L }; }
           const names = [name()]; while (isOp(',')) { next(); names.push(name()); }
           expectId('from'); return { k: 'import', names: names, src: primary(), L: L }; }
         case 'export': if (!isId('fn') && !isId('let')) fail('"export" must be followed by fn or let'); return { k: 'export', s: stmt(), L: L };
         default: {
           p--; const e = primary();
-          if (e.k === 'call') return { k: 'call', e: e, L: L };
+          if (e.k === 'call' || e.k === 'mcall') return { k: 'call', e: e, L: L };
           const AS = { '=': null, '+=': '+', '-=': '-' }, t = T[p];
           if (t.t === 'op' && Object.prototype.hasOwnProperty.call(AS, t.v) && (e.k === 'var' || e.k === 'member' || e.k === 'index')) {
             next(); let v = expr(); if (AS[t.v]) v = { k: 'bin', op: AS[t.v], l: e, r: v, L: L };

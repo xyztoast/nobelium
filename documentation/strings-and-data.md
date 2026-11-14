@@ -73,6 +73,57 @@ log "total {total}"
 - Looping over `null` or a number is an error, so check data from a `get` first.
 - To loop over an object, use its keys: `for each k in keys(obj) { log "{k} = {obj[k]}" }`.
 
+## Methods
+
+Lists and text have methods, written after a dot:
+
+```nobelium
+let xs = [3, 1, 2]
+xs.push(9).sort()
+log xs.pop()                          // 9
+log "  Hi,There ".trim().upper().split(",")
+```
+
+| on lists | |
+|---|---|
+| `push(x)` `unshift(x)` | add to the end / start (return the list) |
+| `pop()` `shift()` | remove and return the last / first (`null` if empty) |
+| `sort()` `reverse()` | change the list in place |
+| `index(x)` `contains(x)` `join(sep)` `slice(a, b)` `len()` | look at it |
+
+| on text | |
+|---|---|
+| `upper()` `lower()` `trim()` | |
+| `split(sep)` `replace(a, b)` `slice(a, b)` | |
+| `starts(p)` `ends(p)` `contains(p)` `index(p)` `len()` | |
+
+The function forms (`len(x)`, `upper(x)`, ...) still work. Methods on an imported namespace call its exported functions (see [modules](modules.md)).
+
+## Dates
+
+`date()` is now, `date(value)` reads a date (milliseconds or text like `"2026-03-04"`, `null` if invalid). You get an object:
+
+```nobelium
+let d = date()
+log "{d.weekday_name} {d.day}/{d.month}/{d.year} {d.clock}"
+```
+
+Fields: `year`, `month` (1-12), `day`, `weekday` (0 = Sunday), `weekday_name`, `hour`, `minute`, `second`, `time` (milliseconds), `iso`, `date`, `clock`.
+
+## while and continue
+
+```nobelium
+let i = 0
+while i < 10 {
+  i += 1
+  if i % 2 == 0 { continue }   // skip even numbers
+  if i > 7 { break }
+  log i
+}
+```
+
+`while` stops with an error after 10000 passes so a mistake cannot freeze the page.
+
 ## JSON
 
 `json(x)` turns a value into JSON text and `parse(text)` turns JSON text back into a value (or `null` if it is not valid JSON). Responses from [http requests](http.md) are parsed for you.

@@ -36,6 +36,13 @@ Shapes:
 | `import a, b from "file"` | bring in those exported names |
 | `import "file"` | just run the file (useful for files that set up events with `when`) |
 
+You can also keep everything under one name:
+
+```nobelium
+import "utils.nbm" as utils
+log utils.money(4.5) + " " + utils.currency
+```
+
 Put imports near the top. Imported names behave like your own functions and variables.
 
 ## Loading files in a page

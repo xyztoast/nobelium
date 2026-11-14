@@ -41,6 +41,11 @@ In the playground the same messages appear in the console panel.
 | `"x" is not defined (create it with let first)` | assigned with `x = ...` before `let x = ...` |
 | `unknown function "x"` | no function or built-in with that name |
 | `"x" is not a function` | you called a variable like a function |
+| `"while" ran more than 10000 times` | the condition never became false |
+| `cannot call .x() on ...` | that method does not exist for lists or text, see [strings-and-data](strings-and-data.md#methods) |
+| `"x" cannot be created ...` / `"onclick" is not allowed ...` | blocked tag or attribute in `create`, see [dom](dom.md) |
+| `set cookie needs a name in quotes` | write `set cookie "name" to value` |
+| `test FAILED: name - message` | an `assert` or an error inside a test, see [testing](testing.md) |
 | `"break" can only be used inside a loop` | `break` must be inside `for each`, `repeat` or `stream` |
 | `"for each" needs a list or text but got null` | the thing you loop over is missing. Check the data first |
 | `list position 9 is out of range (0 to 3)` | you can set positions up to the current length |

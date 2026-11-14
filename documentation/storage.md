@@ -30,6 +30,27 @@ log p.scores[1]      // 9
 
 Functions cannot be saved.
 
+## Session storage
+
+Add `in session` to keep a value only until the tab is closed. Read it with `saved("key", "session")`:
+
+```nobelium
+save step as "step" in session
+let s = saved("step", "session") or 1
+forget "step" in session
+clear session
+```
+
+## Cookies
+
+```nobelium
+set cookie "theme" to "dark" days 30    // days is optional (without it the cookie ends with the browser session)
+log cookie("theme")                     // dark, or null
+forget cookie "theme"
+```
+
+Cookies are plain text, are sent to your server with every request, and are limited to about 4 KB each. Use `save` for anything the server does not need.
+
 ## Good to know
 
 - Keys are private to Nobelium: internally they are stored with a `nobelium:` prefix, so `clear storage` never touches data that other scripts on your site saved.

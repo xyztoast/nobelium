@@ -3,9 +3,26 @@
   N.config = { log: function (l, m) { (l === 'error' ? console.error : console.log)('[nobelium] ' + m); } };
   N.programs = [];
   const st = document.createElement('style'); st.textContent = 'nobelium{display:none}'; (document.head || document.documentElement).appendChild(st);
+  let offs = null;   // line where each inline block starts in the html file, so errors point into the page
+  function pageOffsets() {
+    if (!offs) offs = (async () => {
+      const r = [];
+      try {
+        if (!/^https?:/.test(location.protocol)) return r;
+        const t = await (await fetch(location.href)).text(), re = /<nobelium[\s>]|<script[^>]*type=["']text\/nobelium["'][^>]*>/gi; let m;
+        while ((m = re.exec(t))) r.push((t.slice(0, t.indexOf('>', m.index) + 1).match(/\n/g) || []).length);
+      } catch (e) {}
+      return r;
+    })();
+    return offs;
+  }
   N.run = async function (src, o) {
     o = o || {};
-    const lg = o.log || function (l, m) { N.config.log(l, (o.label ? o.label + ': ' : '') + m); };
+    const lg = o.log || function (l, m) {
+      const out = x => N.config.log(l, (o.label ? o.label + ': ' : '') + x);
+      if (l !== 'error' || o.index === undefined || !/^line \d+:/.test(m)) return out(m);
+      pageOffsets().then(a => { const off = a.length === o.total ? a[o.index] : 0; out(m.replace(/^line (\d+):/, (x, n) => 'line ' + (+n + off) + ':')); });
+    };
     let ast; try { ast = N.parse(src); } catch (e) { lg('error', e.message); return null; }
     const it = new N.Interpreter({ doc: o.doc || document, log: lg, base: o.base }); N.programs.push(it);
     await it.start(ast); return it;
@@ -15,7 +32,7 @@
     for (const el of els) {
       i++; let src = el.textContent; const url = el.getAttribute('src'); const label = 'block ' + i + (url ? ' (' + url + ')' : '');
       if (url) { try { const r = await fetch(url); if (!r.ok) throw 0; src = await r.text(); } catch (e) { N.config.log('error', label + ': could not load file'); continue; } }
-      await N.run(src, { label: label, base: url ? new URL(url, document.baseURI).href : undefined });
+      await N.run(src, { index: url ? undefined : i - 1, total: els.length, label: label, base: url ? new URL(url, document.baseURI).href : undefined });
     }
   };
   if (!window.NOBELIUM_MANUAL) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', N.init); else N.init(); }

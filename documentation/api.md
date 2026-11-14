@@ -67,6 +67,10 @@ For [imports](modules.md) without a web server (opening the html file from disk,
 
 Virtual files win over real files with the same name.
 
+## Error line numbers
+
+Errors in inline `<nobelium>` blocks are reported with the line number **in the html file** (the page source is fetched once, only when an error happens, and only over http/https). Imported and `src` files report their own line numbers.
+
 ## More API
 
 | name | what it is |

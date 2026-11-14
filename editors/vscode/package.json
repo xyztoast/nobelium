@@ -1,0 +1,13 @@
+{
+  "name": "nobelium",
+  "displayName": "Nobelium",
+  "description": "Syntax highlighting for the Nobelium language",
+  "version": "0.1.0",
+  "publisher": "nobelium",
+  "engines": { "vscode": "^1.60.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [{ "id": "nobelium", "aliases": ["Nobelium"], "extensions": [".nobelium", ".nbm"], "configuration": "./language-configuration.json" }],
+    "grammars": [{ "language": "nobelium", "scopeName": "source.nobelium", "path": "./syntaxes/nobelium.tmLanguage.json" }]
+  }
+}

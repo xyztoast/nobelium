@@ -19,24 +19,26 @@
 - playground with syntax highlighting, preview, console, and an import library file
 - browser test page
 
-## Planned next
+## Also done
 
-- `while` loop and `continue`
-- methods on values (`list.push(x)`) and dates
-- `sessionStorage` and cookies
-- shortcuts for tabs and accordions
-- editor highlighting for VS Code
+- `while`, `continue`, methods on lists and text, dates
+- sessionStorage and cookies
+- `tabs` and `accordion`
+- `create`, `copy` (templates), `empty`, `remove element`
+- `import "file" as name`
+- built-in test runner (`test`, `assert`, `trigger`, `run tests`)
+- error line numbers that point into the html file
+- VS Code syntax highlighting (`editors/vscode`)
 
-## Later
+## Ideas for later
 
-- `import ... as name` namespaces
-- a small test runner for Nobelium programs
-- error line numbers that point into the html file, not just the block
-- creating new elements from templates
+- `else` after loops, `for each` with an index
+- lambdas and `map` / `filter`
+- source maps for imported files inside bundles
+- a formatter
 
 ## Known limits
 
 - a top-level `wait`, `get` or `stream` delays later code in the same page
-- no `while` loop yet, only `repeat` and `for each`
 - numbers are JavaScript numbers (floating point)
 - `import` needs a web server, or virtual files

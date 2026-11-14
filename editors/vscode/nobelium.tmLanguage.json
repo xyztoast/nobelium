@@ -1,0 +1,20 @@
+{
+  "scopeName": "source.nobelium",
+  "name": "Nobelium",
+  "patterns": [
+    { "name": "comment.line.double-slash.nobelium", "match": "//.*$" },
+    { "begin": "\"", "end": "\"", "name": "string.quoted.double.nobelium", "patterns": [
+      { "match": "\\\\.", "name": "constant.character.escape.nobelium" },
+      { "begin": "\\{", "end": "\\}", "name": "meta.interpolation.nobelium", "patterns": [{ "include": "$self" }] } ] },
+    { "begin": "'", "end": "'", "name": "string.quoted.single.nobelium", "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.nobelium" }] },
+    { "name": "constant.numeric.nobelium", "match": "\\b\\d+(\\.\\d+)?(ms|s)?\\b" },
+    { "name": "constant.language.nobelium", "match": "\\b(true|false|null)\\b" },
+    { "name": "keyword.control.nobelium", "match": "\\b(when|if|else|repeat|while|for|each|in|break|continue|return|stop|import|export|from|as)\\b" },
+    { "name": "storage.type.nobelium", "match": "\\b(let|fn)\\b" },
+    { "name": "keyword.operator.word.nobelium", "match": "\\b(and|or|not|of)\\b" },
+    { "name": "keyword.other.nobelium", "match": "\\b(set|show|hide|toggle|add|remove|class|element|to|on|fade|out|animate|over|ease|delay|times|nowait|shake|pulse|bounce|spin|flash|wobble|wait|log|fetch|get|post|put|patch|delete|stream|with|headers|into|every|after|cancel|save|forget|clear|storage|session|cookie|days|tabs|accordion|only|create|copy|empty|test|assert|run|tests|trigger)\\b" },
+    { "name": "support.function.builtin.nobelium", "match": "\\b(len|upper|lower|trim|num|str|round|floor|abs|min|max|contains|random|now|item|exists|push|keys|json|parse|split|join|replace|starts|ends|slice|saved|cookie|date|value|text)\\b(?=\\s*\\(|\\s+of\\b)" },
+    { "name": "entity.name.function.nobelium", "match": "\\b[A-Za-z_]\\w*(?=\\s*\\()" },
+    { "name": "keyword.operator.nobelium", "match": "==|!=|<=|>=|\\+=|-=|[-+*/%<>=]" }
+  ]
+}

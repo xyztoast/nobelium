@@ -3,7 +3,7 @@
   const E = N.NobeliumError;
   N.files = N.files || {};          // virtual files for import: { "name.nbm": "source" }
   N.modules = new Map();            // imported modules, shared by the whole page
-  const MEM = new Map();            // fallback when localStorage is unavailable
+  const MEM = new Map(), MEMS = new Map();   // fallbacks when storage is unavailable
   class Scope {
     constructor(p) { this.v = new Map(); this.p = p || null; }
     find(n) { for (let s = this; s; s = s.p) if (s.v.has(n)) return s; return null; }
@@ -14,6 +14,7 @@
   class Fn { constructor(d, sc, owner) { this.d = d; this.sc = sc; this.owner = owner; } }
   class Ret { constructor(v) { this.v = v; } }
   class Brk {}
+  class Cnt {}
   const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   const mk = o => Object.assign(Object.create(null), o || {});
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -32,6 +33,10 @@
     wobble: [0, -6, 5, -3, 0].map(x => ({ transform: 'rotate(' + x + 'deg)' }))
   };
 
+  const LM = { push: (a, x) => { a.push(x); return a; }, pop: a => a.length ? a.pop() : null, shift: a => a.length ? a.shift() : null, unshift: (a, x) => { a.unshift(x); return a; }, reverse: a => a.reverse(),
+    sort: a => a.sort((x, y) => x < y ? -1 : x > y ? 1 : 0), index: (a, x) => a.indexOf(x), join: (a, s) => a.join(s === undefined ? ',' : String(s)), slice: (a, x, y) => a.slice(x, y), contains: (a, x) => a.indexOf(x) >= 0, len: a => a.length };
+  const TM = { upper: t => t.toUpperCase(), lower: t => t.toLowerCase(), trim: t => t.trim(), split: (t, s) => t.split(String(s)), replace: (t, a, b) => t.split(String(a)).join(String(b)),
+    starts: (t, p) => t.indexOf(String(p)) === 0, ends: (t, p) => t.endsWith(String(p)), contains: (t, p) => t.indexOf(String(p)) >= 0, slice: (t, x, y) => t.slice(x, y), index: (t, p) => t.indexOf(String(p)), len: t => t.length };
   N.Interpreter = class {
     constructor(o) {
       this.doc = o.doc || document; this.log = o.log || function () {};
@@ -53,7 +58,10 @@
         replace: (t, a, b) => String(t).split(String(a)).join(String(b)),
         starts: (t, p) => String(t).indexOf(String(p)) === 0, ends: (t, p) => String(t).endsWith(String(p)),
         slice: (x, a, b) => Array.isArray(x) || typeof x === 'string' ? x.slice(a, b) : null,
-        saved: k => this.sget(String(k))
+        saved: (k, w) => this.sget(String(k), w === 'session'),
+        cookie: n => { const p = encodeURIComponent(String(n)) + '=', c = this.doc.cookie.split('; ').filter(x => x.indexOf(p) === 0)[0]; return c ? decodeURIComponent(c.slice(p.length)) : null; },
+        date: x => { const d = x === undefined ? new Date() : new Date(x); if (isNaN(d)) return null;
+          return mk({ year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay(), weekday_name: d.toLocaleDateString(undefined, { weekday: 'long' }), hour: d.getHours(), minute: d.getMinutes(), second: d.getSeconds(), time: d.getTime(), iso: d.toISOString(), date: d.toLocaleDateString(), clock: d.toLocaleTimeString() }); }
       };
     }
     fmt(v) { return v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v); }
@@ -69,32 +77,46 @@
     fail(x) {
       if (x instanceof Ret) return;
       if (x instanceof Brk) { this.log('error', '"break" can only be used inside a loop'); return; }
+      if (x instanceof Cnt) { this.log('error', '"continue" can only be used inside a loop'); return; }
       this.log('error', x instanceof E ? x.message : 'internal error: ' + x.message);
     }
-    // ---- storage (localStorage, falls back to memory) ----
-    store() {
-      if (this._st === undefined) {
-        try { const s = this.win().localStorage; s.setItem('__nbm', '1'); s.removeItem('__nbm'); this._st = s; }
-        catch (e) { this._st = null; this.log('log', 'note: localStorage is not available here, saved values are kept in memory only'); }
+    // ---- storage (localStorage / sessionStorage, falls back to memory) ----
+    store(sess) {
+      const k = sess ? '_ss' : '_st';
+      if (this[k] === undefined) {
+        try { const s = sess ? this.win().sessionStorage : this.win().localStorage; s.setItem('__nbm', '1'); s.removeItem('__nbm'); this[k] = s; }
+        catch (e) { this[k] = null; if (!this._note) { this._note = 1; this.log('log', 'note: browser storage is not available here, saved values are kept in memory only'); } }
       }
-      return this._st;
+      return this[k];
     }
-    sget(k) {
-      const s = this.store(), raw = s ? s.getItem('nobelium:' + k) : (MEM.has(k) ? MEM.get(k) : null);
+    sget(k, sess) {
+      const s = this.store(sess), M = sess ? MEMS : MEM, raw = s ? s.getItem('nobelium:' + k) : (M.has(k) ? M.get(k) : null);
       if (raw === null) return null; try { return JSON.parse(raw); } catch (e) { return raw; }
     }
-    sset(k, v, L) {
+    sset(k, v, L, sess) {
       if (typeof k !== 'string' || !k) throw new E('save needs a name in quotes, like save count as "count"', L);
       if (v instanceof Fn) throw new E('cannot save a function', L);
-      const raw = JSON.stringify(v), s = this.store();
-      if (!s) { MEM.set(k, raw); return; }
+      const raw = JSON.stringify(v), s = this.store(sess);
+      if (!s) { (sess ? MEMS : MEM).set(k, raw); return; }
       try { s.setItem('nobelium:' + k, raw); } catch (e) { throw new E('could not save "' + k + '" (storage is full or blocked)', L); }
     }
-    sdel(k) { const s = this.store(); if (s) s.removeItem('nobelium:' + k); else MEM.delete(k); }
-    sclear() {
-      const s = this.store(); if (!s) { MEM.clear(); return; }
+    sdel(k, sess) { const s = this.store(sess); if (s) s.removeItem('nobelium:' + k); else (sess ? MEMS : MEM).delete(k); }
+    sclear(sess) {
+      const s = this.store(sess); if (!s) { (sess ? MEMS : MEM).clear(); return; }
       const ks = []; for (let i = 0; i < s.length; i++) { const k = s.key(i); if (k.indexOf('nobelium:') === 0) ks.push(k); }
       ks.forEach(k => s.removeItem(k));
+    }
+    fill(el, o, L) {
+      if (o === null) return;
+      if (typeof o !== 'object' || Array.isArray(o)) throw new E('options must be an object like { text: "hi", class: "row" }', L);
+      Object.keys(o).forEach(k => {
+        const v = o[k];
+        if (k === 'text') el.textContent = this.fmt(v); else if (k === 'value') el.value = v; else if (k === 'class') el.className = String(v);
+        else {
+          if (/^on/i.test(k) || (/^(href|src|action|formaction)$/i.test(k) && /^\s*javascript:/i.test(String(v)))) throw new E('"' + k + '" is not allowed (event handlers and javascript: links are blocked)', L);
+          el.setAttribute(k, String(v));
+        }
+      });
     }
     // ---- http ----
     hdrs(o) {
@@ -190,12 +212,12 @@
       if (this.depth > 200) throw new E('too many nested function calls', L);
       this.depth++; const sc = new Scope(f.sc);
       f.d.ps.forEach((p, i) => sc.def(p, i < a.length ? a[i] : null));
-      try { await this.block(f.d.body, sc); } catch (x) { if (x instanceof Ret) return x.v; if (x instanceof Brk) throw new E('"break" can only be used inside a loop', L); throw x; } finally { this.depth--; }
+      try { await this.block(f.d.body, sc); } catch (x) { if (x instanceof Ret) return x.v; if (x instanceof Brk || x instanceof Cnt) throw new E('"break" and "continue" can only be used inside a loop', L); throw x; } finally { this.depth--; }
       return null;
     }
     async loop(body, sc, vars) {   // runs one loop pass; returns true if "break" was used
       const c = new Scope(sc); if (vars) c.def(vars[0], vars[1]);
-      try { await this.block(body, c); } catch (x) { if (x instanceof Brk) return true; throw x; }
+      try { await this.block(body, c); } catch (x) { if (x instanceof Brk) return true; if (x instanceof Cnt) return false; throw x; }
       return false;
     }
     cssObj(o, L) {
@@ -239,10 +261,16 @@
         case 'export': await this.exec(s.s, sc); this.exports.set(s.s.n, sc.get(s.s.n)); break;
         case 'import': { const path = await this.ev(s.src, sc);
           if (typeof path !== 'string') throw new E('import needs a file name in quotes', s.L);
-          const it = await this.load(path, s.L);
+          const it = await this.load(path, s.L); if (s.alias) sc.def(s.alias, mk(Object.fromEntries(it.exports)));
           if (s.names) for (const n of s.names) { if (!it.exports.has(n)) throw new E('"' + path + '" does not export "' + n + '"', s.L); sc.def(n, it.exports.get(n)); }
           break; }
-        case 'set': { const v = await this.ev(s.e, sc);
+        case 'set': {
+          if (s.prop === 'cookie') {
+            const n = await this.ev(s.sel, sc), cv = await this.ev(s.e, sc), d = s.days ? Number(await this.ev(s.days, sc)) : 0;
+            if (typeof n !== 'string' || !n) throw new E('set cookie needs a name in quotes', s.L);
+            this.doc.cookie = encodeURIComponent(n) + '=' + encodeURIComponent(this.fmt(cv)) + '; path=/; SameSite=Lax' + (d > 0 ? '; expires=' + new Date(Date.now() + d * 864e5).toUTCString() : ''); break;
+          }
+          const v = await this.ev(s.e, sc);
           for (const el of this.q(await this.ev(s.sel, sc), s.L)) {
             if (s.prop === 'text') el.textContent = this.fmt(v); else if (s.prop === 'value') el.value = v;
             else throw new E('cannot set "' + s.prop + '" (use text or value)', s.L);
@@ -295,9 +323,46 @@
           if (every) h = setInterval(go, d); else h = setTimeout(() => { this.timers.delete(id); go(); }, d);
           this.timers.set(id, { every: every, h: h }); if (s.n) sc.def(s.n, id); break; }
         case 'cancel': { const id = await this.ev(s.e, sc), t = this.timers.get(id); if (t) { (t.every ? clearInterval : clearTimeout)(t.h); this.timers.delete(id); } break; }
-        case 'save': { const v = await this.ev(s.e, sc); this.sset(await this.ev(s.key, sc), v, s.L); break; }
-        case 'forget': this.sdel(String(await this.ev(s.key, sc))); break;
-        case 'clearstore': this.sclear(); break;
+        case 'save': { const v = await this.ev(s.e, sc); this.sset(await this.ev(s.key, sc), v, s.L, s.sess); break; }
+        case 'forget': this.sdel(String(await this.ev(s.key, sc)), s.sess); break;
+        case 'delcookie': this.doc.cookie = encodeURIComponent(String(await this.ev(s.key, sc))) + '=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'; break;
+        case 'clearstore': this.sclear(s.sess); break;
+        case 'while': { let n = 0; while (await this.ev(s.c, sc)) { if (++n > 10000) throw new E('"while" ran more than 10000 times (infinite loop?)', s.L); if (await this.loop(s.body, sc)) break; } break; }
+        case 'continue': throw new Cnt();
+        case 'group': {
+          const hs = await this.ev(s.a, sc), ps = await this.ev(s.b, sc); this.q(hs, s.L); this.q(ps, s.L);
+          const tabs = s.kind === 'tabs', cls = tabs ? 'active' : 'open', all = x => Array.from(this.doc.querySelectorAll(x));
+          const apply = (i, click) => { const H = all(hs); all(ps).forEach((p, j) => { const was = this.shown(p);
+            const open = tabs ? j === i : (j === i ? (click ? !was : was) : (s.only ? false : was));
+            if (open) this.show(p); else p.style.display = 'none'; if (H[j]) H[j].classList.toggle(cls, open); }); };
+          if (tabs) { const a = all(hs).findIndex(h => h.classList.contains('active')); apply(a < 0 ? 0 : a, false); }
+          else { all(ps).forEach(p => { p.style.display = 'none'; }); all(hs).forEach(h => h.classList.remove('open')); }
+          const h = e => { const hit = e.target && e.target.closest ? e.target.closest(hs) : null; if (!hit) return; const i = all(hs).indexOf(hit); if (i >= 0) apply(i, true); };
+          this.doc.addEventListener('click', h, true); this.off.push(() => this.doc.removeEventListener('click', h, true)); break; }
+        case 'create': { const tag = await this.ev(s.tag, sc);
+          if (typeof tag !== 'string' || !/^[a-z][a-z0-9-]*$/i.test(tag) || /^(script|iframe|object|embed)$/i.test(tag)) throw new E('"' + this.fmt(tag) + '" cannot be created (use a normal tag name; script, iframe, object and embed are blocked)', s.L);
+          const o = s.opts ? await this.ev(s.opts, sc) : null;
+          for (const par of this.q(await this.ev(s.into, sc), s.L)) { const el = this.doc.createElement(tag); this.fill(el, o, s.L); par.appendChild(el); } break; }
+        case 'copy': { const src = this.q(await this.ev(s.from, sc), s.L)[0], o = s.opts ? await this.ev(s.opts, sc) : null;
+          if (o !== null && (typeof o !== 'object' || Array.isArray(o))) throw new E('options must be an object like { title: "hi" }', s.L);
+          for (const par of this.q(await this.ev(s.into, sc), s.L)) {
+            let frag; if (src.content) frag = src.content.cloneNode(true); else { frag = this.doc.createDocumentFragment(); const c = src.cloneNode(true); c.removeAttribute('id'); frag.appendChild(c); }
+            if (o) Object.keys(o).forEach(k => frag.querySelectorAll('[data-slot="' + k.replace(/[^\w-]/g, '') + '"]').forEach(n => { n.textContent = this.fmt(o[k]); }));
+            par.appendChild(frag);
+          } break; }
+        case 'empty': for (const el of this.q(await this.ev(s.sel, sc), s.L)) el.textContent = ''; break;
+        case 'rmel': for (const el of this.q(await this.ev(s.sel, sc), s.L)) el.remove(); break;
+        case 'test': (this.tests || (this.tests = [])).push({ name: this.fmt(await this.ev(s.name, sc)), body: s.body, sc: sc }); break;
+        case 'assert': if (!(await this.ev(s.c, sc))) throw new E(s.m ? this.fmt(await this.ev(s.m, sc)) : 'assertion failed', s.L); break;
+        case 'trigger': { const t = EV[s.ev] || s.ev, W = this.win(), mouse = /^(click|dblclick|mousedown|mouseup|mouseover|mouseout|mousemove|contextmenu)$/.test(t);
+          for (const el of this.q(await this.ev(s.sel, sc), s.L)) el.dispatchEvent(mouse ? new W.MouseEvent(t, { bubbles: true, cancelable: true }) : new W.Event(t, { bubbles: true, cancelable: true }));
+          await sleep(20); break; }
+        case 'runtests': { let ok = 0, bad = 0;
+          for (const t of (this.tests || [])) {
+            try { await this.block(t.body, new Scope(t.sc)); ok++; this.log('log', 'test passed: ' + t.name); }
+            catch (x) { if (x instanceof Ret) { ok++; this.log('log', 'test passed: ' + t.name); } else { bad++; this.log('error', 'test FAILED: ' + t.name + ' - ' + x.message); } }
+          }
+          this.log(bad ? 'error' : 'log', ok + ' passed, ' + bad + ' failed'); break; }
         case 'if': if (await this.ev(s.c, sc)) await this.block(s.a, new Scope(sc)); else if (s.b) await this.block(s.b, new Scope(sc)); break;
         case 'repeat': { const n = Math.min(Number(await this.ev(s.n, sc)) || 0, 10000); for (let i = 0; i < n; i++) if (await this.loop(s.body, sc)) break; break; }
         case 'foreach': { const it = await this.ev(s.it, sc); let list;
@@ -328,6 +393,11 @@
             const j = i < 0 ? o.length + i : i; return j >= 0 && j < o.length && Math.floor(j) === j ? o[j] : null; }
           if (o !== null && typeof o === 'object') return own(o, String(i)) ? o[String(i)] : null;
           throw new E('cannot use [ ] on ' + this.fmt(o), e.L); }
+        case 'mcall': { const o = await this.ev(e.o, sc), a = []; for (const x of e.args) a.push(await this.ev(x, sc));
+          if (o !== null && typeof o === 'object' && !Array.isArray(o)) { const f = own(o, e.n) ? o[e.n] : null; if (f instanceof Fn) return this.callFn(f, a, e.L); throw new E('"' + e.n + '" is not a function', e.L); }
+          const M = Array.isArray(o) ? LM : typeof o === 'string' ? TM : null;
+          if (!M || !own(M, e.n)) throw new E('cannot call .' + e.n + '() on ' + (o === null ? 'null' : Array.isArray(o) ? 'a list' : typeof o), e.L);
+          try { return M[e.n].apply(null, [o].concat(a)); } catch (x) { throw new E(x.message, e.L); } }
         case 'read': { const el = this.q(await this.ev(e.sel, sc), e.L)[0]; return e.prop === 'value' ? el.value : el.textContent; }
         case 'un': { const v = await this.ev(e.e, sc); if (e.op === 'not') return !v; if (typeof v !== 'number') throw new E('cannot negate a non-number', e.L); return -v; }
         case 'call': { const a = []; for (const x of e.args) a.push(await this.ev(x, sc));

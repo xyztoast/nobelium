@@ -77,7 +77,7 @@ set text "#out" to greet("sam")
 
 ## Reserved words
 
-`when let set fn if else repeat for each in break return stop show hide toggle add remove class to from on fade animate wait log fetch get post put patch delete stream every after cancel save forget clear storage import export with headers into as over ease delay times nowait of and or not true false null value text` and the animation presets `shake pulse bounce spin flash wobble`.
+`when let set fn if else repeat while for each in break continue return stop show hide toggle add remove class to from on fade animate wait log fetch get post put patch delete stream every after cancel save forget clear storage import export with headers into as over ease delay times nowait of and or not true false null value text` plus `tabs accordion only create copy empty element test assert run tests trigger session cookie days`, and the animation presets `shake pulse bounce spin flash wobble`.
 
 Statement words only matter at the start of a statement (and the clause words only inside the statement that uses them), so a variable called `delay` is fine until it appears right after an `animate` line. When in doubt, pick a different name.
 
@@ -87,7 +87,7 @@ Statement words only matter at the start of a statement (and the clause words on
 
 | thing | limit |
 |---|---|
-| `repeat` count | 10000 |
+| `repeat` count / `while` passes | 10000 |
 | `wait` time | 60 seconds |
 | nested function calls | 200 |
 | `every` interval | at least 16 ms |

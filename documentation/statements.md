@@ -23,7 +23,10 @@ Quick table, details below.
 | `fetch "url" into name` | full response with status and headers, see [http](http.md) |
 | `stream "url" into chunk { }` | read a response piece by piece, see [http](http.md) |
 | `for each x in list { }` | loop over a list or text |
-| `break` | leave the nearest loop |
+| `while cond { }` / `continue` / `break` | loop while true / skip to the next pass / leave the loop |
+| `create` / `copy` / `empty` / `remove element` | build and remove elements, see [dom](dom.md) |
+| `tabs` / `accordion` | click-to-show panels, see [dom](dom.md) |
+| `test` / `assert` / `trigger` / `run tests` | see [testing](testing.md) |
 | `x += 1`, `obj.key = v`, `list[0] = v` | change variables, fields and list items |
 | `animate "sel" to { } over 1s` | smooth css animation, see [animation](animation.md) |
 | `every 1s { }` / `after 1s { }` / `cancel t` | timers, see [timers](timers.md) |
