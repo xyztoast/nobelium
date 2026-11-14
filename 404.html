@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Not found</title>
+<script>
+// github pages serves this file for unknown paths. Paths like /docs/events are handled by docs.html.
+var m = /^(.*\/)docs(?:\/([\w-]*))?\/?$/.exec(location.pathname);
+if (m) location.replace(m[1] + 'docs.html?p=' + (m[2] || '') + location.hash);
+</script></head>
+<body style="font-family:system-ui;background:#0e0f12;color:#e6e4df;padding:10vh 8vw">
+<h1>404</h1><p>That page does not exist.</p><p><a href="/" style="color:#a0e3ff">Back to the home page</a></p></body></html>
