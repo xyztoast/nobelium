@@ -194,7 +194,7 @@
         if ((s.ev === 'hover' || s.ev === 'leave') && t.contains && t.contains(e.relatedTarget)) return;
         this.run(s.body, sc, { type: s.ev, key: e.key === undefined ? null : e.key, value: t.value === undefined ? null : t.value, text: t.textContent }, e);
       };
-      this.doc.addEventListener(type, h); this.off.push(() => this.doc.removeEventListener(type, h));
+      this.doc.addEventListener(type, h, true); this.off.push(() => this.doc.removeEventListener(type, h, true));
     }
     async callFn(f, a, L) {
       if (this.depth > 200) throw new E('too many nested function calls', L);
