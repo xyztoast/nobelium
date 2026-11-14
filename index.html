@@ -1,0 +1,44 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nobelium - interactive html without the javascript</title><link rel="stylesheet" href="style.css"></head><body>
+<nav><b>nobelium</b><a href="index.html">Home</a><a href="docs.html">Docs</a><a href="playground.html">Playground</a><a href="index.html#examples">Examples</a><a href="index.html#download">Download</a><a href="index.html#roadmap">Roadmap</a></nav>
+<main>
+<h1>Interactive HTML,<br>in plain sentences.</h1>
+<p class="lead">Nobelium is a small language that lives inside your HTML. It has its own parser and interpreter, and it never uses <code>eval()</code>. Write what you want to happen and skip the boilerplate.</p>
+<a class="btn" href="playground.html">Open the playground</a><a class="btn g" href="docs.html">Read the docs</a>
+<pre><code><span class="c">&lt;!-- index.html --&gt;</span>
+&lt;button id="menuButton"&gt;Open menu&lt;/button&gt;
+
+&lt;nobelium&gt;
+  <span class="k">when</span> click <span class="s">"#menuButton"</span> {
+    <span class="k">toggle</span> <span class="s">"#menu"</span>
+  }
+&lt;/nobelium&gt;</code></pre>
+<h2>Getting started</h2>
+<p>1. Download <code>nobelium.js</code> from the <a href="#download">download section</a> and put it next to your html file.</p>
+<p>2. Add it to your page, then write a block:</p>
+<pre><code>&lt;script src="nobelium.js"&gt;&lt;/script&gt;
+&lt;h2 id="n"&gt;0&lt;/h2&gt;
+&lt;button id="inc"&gt;+1&lt;/button&gt;
+
+&lt;nobelium&gt;
+  <span class="k">let</span> count = <span class="n">0</span>
+  <span class="k">when</span> click <span class="s">"#inc"</span> {
+    count = count + <span class="n">1</span>
+    <span class="k">set</span> text <span class="s">"#n"</span> <span class="k">to</span> count
+  }
+&lt;/nobelium&gt;</code></pre>
+<p>3. Open the page. Click the button. That is the whole setup. Selectors are always strings in quotes, like css: <code>"#id"</code>, <code>".class"</code>.</p>
+<p>Tip: if your code uses <code>&lt;</code> or <code>&amp;</code>, put it in <code>&lt;script type="text/nobelium"&gt;</code> instead of <code>&lt;nobelium&gt;</code> so the html parser leaves it alone. Standalone files work too: <code>&lt;nobelium src="app.nbm"&gt;&lt;/nobelium&gt;</code> (needs a web server or github pages).</p>
+<h2 id="examples">Examples</h2>
+<div class="grid" id="gal"></div>
+<h2 id="download">Download</h2>
+<p><a class="btn" href="dist/nobelium.js" download>nobelium.js</a> is the whole language in one file (about 15 kb, no dependencies). Or copy the four files in <code>src/</code> (lexer, parser, interpreter, runtime). Works in any modern browser, nothing to install.</p>
+<h2 id="roadmap">Roadmap</h2>
+<table>
+<tr><td>done</td><td>events, show/hide/toggle, classes, variables, if/else, functions, repeat, fade, wait, get requests, form reading and validation, keyboard keys, standalone files, playground</td></tr>
+<tr><td>next</td><td>post requests, lists and indexing, string templates, <code>animate</code> with custom css, tabs/accordion shortcuts, a vs code highlighting file</td></tr>
+<tr><td>later</td><td>modules (<code>import</code>), a tiny test runner, source maps for error lines inside html files</td></tr>
+</table>
+</main>
+<script src="examples.js"></script>
+<script>document.getElementById('gal').innerHTML=EXAMPLES.map(e=>'<a class="card" href="playground.html#'+e.id+'">'+e.name+'<small>open in playground</small></a>').join('')</script>
+</body></html>

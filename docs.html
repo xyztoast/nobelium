@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nobelium docs</title><link rel="stylesheet" href="style.css"></head><body>
+<nav><b>nobelium</b><a href="index.html">Home</a><a href="docs.html">Docs</a><a href="playground.html">Playground</a><a href="index.html#examples">Examples</a><a href="index.html#download">Download</a><a href="index.html#roadmap">Roadmap</a></nav>
+<main><h1>Documentation</h1>
+<p class="lead">Everything Nobelium can do. Statements run top to bottom. Comments start with <code>//</code>. Selectors are strings.</p>
+<h2>Events</h2>
+<p><code>when EVENT "selector" { ... }</code> runs the block when the event happens on a matching element. It also works for elements added to the page later.</p>
+<table><tr><th>event</th><th>meaning</th></tr>
+<tr><td>click</td><td>element clicked</td></tr><tr><td>hover / leave</td><td>pointer enters / leaves the element</td></tr>
+<tr><td>input</td><td>typing in an input</td></tr><tr><td>submit</td><td>form submitted</td></tr>
+<tr><td>keypress</td><td>any key pressed (<code>when keypress { }</code>, no selector). Use <code>event.key</code></td></tr>
+<tr><td>key "Escape"</td><td>one specific key, anywhere on the page</td></tr>
+<tr><td>load</td><td>runs right away when the page is ready (<code>when load { }</code>)</td></tr></table>
+<p>Inside a block, <code>event</code> has <code>type</code>, <code>key</code>, <code>value</code> and <code>text</code>.</p>
+<h2>Statements</h2>
+<table>
+<tr><td>show "#a"</td><td>make visible. Also <code>hide</code> and <code>toggle</code></td></tr>
+<tr><td>fade in "#a"</td><td>fade in (or <code>fade out</code>), 0.3 seconds</td></tr>
+<tr><td>add class "x" to "#a"</td><td>also <code>remove class "x" from "#a"</code> and <code>toggle class "x" on "#a"</code></td></tr>
+<tr><td>set text "#a" to expr</td><td>change text. <code>set value</code> changes an input</td></tr>
+<tr><td>let x = expr</td><td>new variable. Change it later with <code>x = expr</code></td></tr>
+<tr><td>if cond { } else { }</td><td>also <code>else if</code>. Blocks nest</td></tr>
+<tr><td>repeat 3 { }</td><td>run a block several times (max 10000)</td></tr>
+<tr><td>fn name(a, b) { }</td><td>function. <code>return expr</code> gives a value back</td></tr>
+<tr><td>wait 500ms</td><td>pause (<code>1s</code> works too)</td></tr>
+<tr><td>get "url" into data</td><td>http request. Json becomes an object, read with <code>data.title</code></td></tr>
+<tr><td>stop</td><td>cancel the browser default (like a form really submitting). Put it before any <code>wait</code> or <code>get</code></td></tr>
+<tr><td>log expr</td><td>print to the console panel / browser console</td></tr></table>
+<h2>Expressions</h2>
+<p>Numbers, strings, <code>true false null</code>, variables, <code>( )</code>, <code>+ - * / %</code>, <code>== != &lt; &gt; &lt;= &gt;=</code>, <code>and or not</code>. <code>+</code> joins text if either side is text. <code>value of "#input"</code> and <code>text of "#el"</code> read the page. Empty text, 0, false and null count as false.</p>
+<h3>built-in functions</h3>
+<table><tr><td>len(x)</td><td>length of text or list</td></tr><tr><td>upper / lower / trim</td><td>text helpers</td></tr><tr><td>contains(a, b)</td><td>true if text a includes b</td></tr><tr><td>num(x) str(x) round(x)</td><td>conversions</td></tr><tr><td>random(a, b)</td><td>whole number from a to b</td></tr><tr><td>item(list, i)</td><td>list item (starts at 0)</td></tr><tr><td>exists("#a")</td><td>true if the element is on the page</td></tr></table>
+<h2>Errors</h2>
+<p>Syntax errors are reported with a line number and that block does not run. Runtime errors (missing element, unknown variable, failed request) are reported and only stop the one handler. The rest of the page keeps working. Errors go to the browser console, or the playground console.</p>
+<h2>Files</h2>
+<p><code>.nobelium</code> is the main extension and <code>.nbm</code> is the short one. Load either with <code>&lt;nobelium src="file.nbm"&gt;&lt;/nobelium&gt;</code>. Multiple blocks per page are fine and share nothing except the page itself.</p>
+<h2>Safety</h2>
+<p>Nobelium is interpreted by walking its own syntax tree. There is no <code>eval</code>, no <code>Function</code>, and objects only expose their own fields.</p>
+</main></body></html>

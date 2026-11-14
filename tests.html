@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Nobelium tests</title>
+<script>window.NOBELIUM_MANUAL=1</script>
+<script src="src/lexer.js"></script><script src="src/parser.js"></script><script src="src/interpreter.js"></script><script src="src/runtime.js"></script>
+<style>body{font:15px monospace;background:#111;color:#ddd;padding:20px}.p{color:#8d8}.f{color:#f88}</style></head><body>
+<h3>Nobelium tests (run in a real browser)</h3><div id="out"></div><div id="fx" style="position:absolute;left:-9999px"></div>
+<script>
+var out=document.getElementById('out'),fx=document.getElementById('fx'),logs=[];
+Nobelium.config.log=function(l,m){logs.push(l+': '+m)};
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function click(s){document.querySelector(s).dispatchEvent(new MouseEvent('click',{bubbles:true}))}
+function report(n,ok){var d=document.createElement('div');d.className=ok?'p':'f';d.textContent=(ok?'PASS ':'FAIL ')+n;out.appendChild(d)}
+async function t(name,html,code,steps,check){fx.innerHTML=html;logs=[];var it=await Nobelium.run(code);if(steps)await steps();await sleep(30);var ok=false;try{ok=check(it)}catch(e){}report(name,ok);if(it)it.dispose()}
+(async function(){
+await t('toggle','<button id=b></button><p id=m style="display:none">x</p>','when click "#b" { toggle "#m" }',async function(){click('#b')},function(){return getComputedStyle(document.querySelector('#m')).display!=='none'});
+await t('counter + variables','<i id=n>0</i><b id=b></b>','let c = 0\nwhen click "#b" { c = c + 1\nset text "#n" to c }',async function(){click('#b');await sleep(10);click('#b')},function(){return document.querySelector('#n').textContent==='2'});
+await t('nested conditions','<i id=r></i>','let n = 5\nif n > 3 { if n < 10 { set text "#r" to "mid" } else { set text "#r" to "big" } }',null,function(){return document.querySelector('#r').textContent==='mid'});
+await t('two listeners, one element','<b id=b></b><i id=r></i>','when click "#b" { set text "#r" to "a" }\nwhen click "#b" { add class "z" to "#r" }',async function(){click('#b')},function(){var r=document.querySelector('#r');return r.textContent==='a'&&r.classList.contains('z')});
+await t('missing selector reports, no crash','','show "#nope"\nlog "alive"',null,function(){return logs.length===2&&/no element/.test(logs[0])});
+await t('invalid syntax reports','','when click {',null,function(it){return it===null&&logs.length===1});
+await t('runtime error isolated','<b id=b></b>','when click "#b" { log nope }\nwhen click "#b" { log "fine" }',async function(){click('#b')},function(){return logs.some(function(l){return /fine/.test(l)})&&logs.some(function(l){return /nope/.test(l)})});
+await t('dynamic DOM','','when click ".x" { set text ".x" to "hi" }',async function(){var b=document.createElement('b');b.className='x';fx.appendChild(b);click('.x')},function(){return document.querySelector('.x').textContent==='hi'});
+await t('functions','<i id=r></i><b id=b></b>','fn dbl(a) { return a * 2 }\nwhen click "#b" { set text "#r" to dbl(21) }',async function(){click('#b')},function(){return document.querySelector('#r').textContent==='42'});
+await t('multiple blocks (separate runs)','<i id=r></i>','set text "#r" to "one"',async function(){await Nobelium.run('set text "#r" to "two"')},function(){return document.querySelector('#r').textContent==='two'});
+})();
+</script></body></html>
