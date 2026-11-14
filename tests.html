@@ -1,8 +1,8 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Nobelium tests</title>
 <script>window.NOBELIUM_MANUAL=1</script>
 <script src="src/lexer.js"></script><script src="src/parser.js"></script><script src="src/interpreter.js"></script><script src="src/runtime.js"></script>
-<style>body{font:15px monospace;background:#111;color:#ddd;padding:20px}.p{color:#8d8}.f{color:#f88}</style></head><body>
-<h3>Nobelium tests (run in a real browser)</h3><div id="out"></div><div id="fx" style="position:absolute;left:-9999px"></div>
+<link rel="stylesheet" href="site/style.css"></head><body class="tests">
+<h3>Nobelium tests (run in a real browser)</h3><div id="out"></div><div id="fx" class="fx"></div>
 <script>
 var out=document.getElementById('out'),fx=document.getElementById('fx'),logs=[];
 Nobelium.config.log=function(l,m){logs.push(l+': '+m)};
